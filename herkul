@@ -1,0 +1,84 @@
+import csv
+import os
+
+import docx
+import string
+directory = '/home/sam/Downloads/declarations of intent kul'
+# directory = '/home/sam/Downloads/a'
+def getText(doc):
+    fullText = []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    return '\n'.join(fullText)
+
+def rep(v):
+    v = v.replace('\n', ' ')
+    return v
+def readTable(table):
+    data = []
+    for i, row in enumerate(table.columns):
+        text = (cell.text for cell in row.cells)
+        # Establish the mapping based on the first row
+        # headers; these will become the keys of our dictionary
+        if i == 0:
+            keys = tuple(text)
+            continue
+        # Construct a dictionary for this row, mapping
+        # keys to values for this row
+        row_data = list(text)
+        a = map(rep, row_data)
+        data.append(tuple(a))
+    return data
+
+def readTableInst(table):
+    data = []
+    for i, row in enumerate(table.rows):
+        text = (cell.text for cell in row.cells)
+
+        # Establish the mapping based on the first row
+        # headers; these will become the keys of our dictionary
+        if i < 2:
+            keys = tuple(text)
+            continue
+        if i == 3 or i == 4:
+            keys = tuple(text)
+            continue
+        # Construct a dictionary for this row, mapping
+        # keys to values for this row
+        row_data = tuple(text)
+        data.append(row_data)
+    return data
+
+for filename in os.listdir(directory):
+    filename = os.path.join(directory, filename)
+    if os.path.isfile(filename):
+
+        doc2 = docx.Document(filename)
+        table = doc2.tables[0]
+        data1 = readTable(table)
+        print(data1)
+        table = doc2.tables[1]
+        data2 = readTable(table)
+        print(data2)
+        table = doc2.tables[2]
+        data3 = readTableInst(table)
+        print(data3)
+        un = ''
+        for j in data3:
+            for k in j:
+                un = un + k + ' '
+            un = un + '; '
+        print(un)
+        print(data1[0][0])
+        header = ['Surname', 'Name', 'Function', 'Adress', 'Telephone number', 'Mail', 'Identifier', 'Institution',
+                  'Faculty', 'Department/Research Group/unit',
+                  'Working group', 'CV', 'Link', 'Keywords', 'Unit members']
+        output = ['', data1[0][0], data2[0][1], data1[0][2], data1[0][3], data1[0][1], data2[0][4] + ' ' + data2[0][5],
+                  'KU Leuven', '', data2[0][2] + ' ' + data2[0][3], '', '', '',
+                  '', un]
+        print(output)
+        file = '/home/sam/Downloads/output/{0}.csv'.format(data1[0][0])
+        with open(file, 'w+', encoding='UTF8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            writer.writerow(output)
